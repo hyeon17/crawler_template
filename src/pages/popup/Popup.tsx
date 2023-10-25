@@ -1,45 +1,27 @@
 import '@pages/popup/Popup.css';
 import withSuspense from '@src/shared/hoc/withSuspense';
 import withErrorBoundary from '@src/shared/hoc/withErrorBoundary';
-import axios from 'axios';
-import { load } from 'cheerio';
-// import { launch } from 'puppeteer';
-
+// import axios from 'axios';
+import {renderHTML} from '../../../server'
 const Popup = () => {
   const getUrl = () => {
     chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      const regex = /id=(\d+)/;
       if (tabs && tabs[0] && tabs[0].url) {
-        renderHTML(tabs[0].url);
+        const match = tabs[0].url.match(regex);
+        const id = match[1];
+        const res = renderHTML(id);
+        console.log(res);
       } else {
         console.log('URL not available');
       }
     });
   };
 
-  const renderHTML = async (url: string) => {
-    const res = await axios.get(url);
-    const $ = load(res.data);
-    // const body = $('body');
-    // const link = '//item.taobao.com/item.htm?id=';
-    const data = [];
-    const originProductName = $('#J_Title > .tb-main-title').text().trim();
-    const scopePrice = $('#J_StrPrice > em.tb-rmb-num').text();
-    const salePrice = $('#J_PromoHd > div > strong > em.tb-rmb-num').text();
-    const originCity = $('#J-From').text().trim();
-    const mainImageSelector = $('#J_UlThumb > li > div > a > img').toArray();
-    const detailImageSelector = $('#J_DivItemDesc > p').find('img').toArray();
-    const optionsArray = $('#J_isku > div > dl > dd > ul > ').toArray();
-    data.push({
-      originProductName,
-      scopePrice,
-      salePrice,
-      originCity,
-      mainImageSelector,
-      detailImageSelector,
-      optionsArray,
-    });
-    console.log(data);
-  };
+  // const sendRequestToServer = async (url) => {
+  //   const res = await axios.post('http://localhost:3000', {url});
+  //   console.log(res);
+  // };
 
   return (
     <div className="App">
